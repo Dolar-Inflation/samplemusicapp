@@ -3,9 +3,10 @@ package com.messenger.samplemusicapp.Services;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
 import com.messenger.samplemusicapp.Repository.AlbumRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@Service
 public class AlbumService {
 
     private final AlbumRepository albumRepository;

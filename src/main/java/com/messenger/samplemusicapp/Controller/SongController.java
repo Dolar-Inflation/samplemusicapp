@@ -18,15 +18,16 @@ public class SongController {
     }
 
     @GetMapping("/all")
-    public String allSongs() {
-       return songService.getAllSongs().toString();
+    public List<Song> allSongs() {
+       return songService.getAllSongs();
     }
 
 
     @PostMapping("/add")
-    public String addSong(@RequestBody Song song, Album album) {
+    public Song addSong(@RequestBody Song song, Album album) {
+
         songService.PostSong(song, album);
-        return "Added Song";
+        return song;
 
 
     }

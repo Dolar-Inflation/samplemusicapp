@@ -1,5 +1,6 @@
 package com.messenger.samplemusicapp.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,5 +20,6 @@ public class Album {
     private String year;
 
     @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Song> songs = new ArrayList<>();
 }

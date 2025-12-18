@@ -1,5 +1,6 @@
 package com.messenger.samplemusicapp.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,9 +16,11 @@ public class Song {
     private String artist;
     private String genre;
     private Long durability;
+    private String fileUrl;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "album_id")
+    @JoinColumn(name = "album_id",nullable = true)
+    @JsonBackReference
     private Album album;
 }
 

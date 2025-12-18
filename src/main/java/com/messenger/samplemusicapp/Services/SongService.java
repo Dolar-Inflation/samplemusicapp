@@ -5,7 +5,10 @@ import com.messenger.samplemusicapp.Entity.Song;
 import com.messenger.samplemusicapp.Repository.AlbumRepository;
 import com.messenger.samplemusicapp.Repository.SongRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Service
@@ -13,26 +16,34 @@ public class SongService {
 
     private final SongRepository songRepository;
     private final AlbumRepository albumRepository;
+    private final UploadFileService uploadFileService;
 
-    public SongService(SongRepository songRepository, AlbumRepository albumRepository) {
+    public SongService(SongRepository songRepository, AlbumRepository albumRepository, UploadFileService uploadFileService) {
         this.songRepository = songRepository;
         this.albumRepository = albumRepository;
+        this.uploadFileService = uploadFileService;
     }
 
-    public void PostSong(Song song, Album album) {
+    public void PostSong(Song song, Album album, MultipartFile file) throws IOException {
 
         if (album != null) {
             if (album.getId() == null) {
-                // альбом новый → сначала сохраняем
+
                 album = albumRepository.save(album);
             } else {
-                // альбом уже есть → подтягиваем из базы
+
                 album = albumRepository.findById(album.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Album not found"));
+                        .orElseThrow(() -> new IllegalArgumentException("error"));
             }
             song.setAlbum(album);
+            if (song.getFileUrl() != null) {
+                song.setFileUrl("/" + Paths.get(song.getFileUrl()).getFileName().toString());
+            }
         }
-        // если album == null → просто сохраняем песню без альбома
+        if (file != null) {
+          String fileUrl =  uploadFileService.uploadFile(file);
+          song.setFileUrl(fileUrl);
+        }
         songRepository.save(song);
 
     }

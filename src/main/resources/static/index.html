@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Загрузка и проигрывание песен</title>
+</head>
+<body>
+<h2>Загрузить песню</h2>
+<form id="uploadForm">
+    <label>Название песни:</label><br>
+    <input type="text" id="songname" name="songname" required><br><br>
+
+    <label>Исполнитель:</label><br>
+    <input type="text" id="artist" name="artist" required><br><br>
+
+    <label>Жанр:</label><br>
+    <input type="text" id="genre" name="genre"><br><br>
+
+    <label>Файл:</label><br>
+    <input type="file" id="fileInput" name="file" accept="audio/*" required><br><br>
+
+    <button type="submit">Загрузить</button>
+</form>
+
+<h2>Проигрыватель</h2>
+<audio id="player" controls></audio>
+
+<script>
+    const form = document.getElementById("uploadForm");
+    const fileInput = document.getElementById("fileInput");
+    const player = document.getElementById("player");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const file = fileInput.files[0];
+        if (!file) {
+            alert("Выберите файл!");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // поля сущности Song
+        formData.append("songname", document.getElementById("songname").value);
+        formData.append("artist", document.getElementById("artist").value);
+        formData.append("genre", document.getElementById("genre").value);
+
+        try {
+            // отправляем на контроллер /api/add
+            const response = await fetch("/api/add", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error("Ошибка загрузки");
+            }
+
+            // сервер возвращает JSON с песней
+            const song = await response.json();
+
+            // устанавливаем источник для проигрывателя
+            player.src = encodeURI(song.fileUrl);
+            player.play();
+
+        } catch (err) {
+            console.error(err);
+            alert("Не удалось загрузить файл");
+        }
+    });
+</script>
+</body>
+</html>

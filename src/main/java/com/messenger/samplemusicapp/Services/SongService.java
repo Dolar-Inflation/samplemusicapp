@@ -10,6 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class SongService {
@@ -57,9 +59,14 @@ public class SongService {
         }
     }
 
-    public List<Song> getAllSongs() {
+    public Map<String,String> getAllSongs() {
 
-        return songRepository.findAll();
+        return songRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(Song::getSongname, Song::getFileUrl));
+//                .map(Song::getSongname,Song::getFileUrl)
+//                .collect(Collectors.toList());
+
     }
 
 

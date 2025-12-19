@@ -22,6 +22,11 @@
     <button type="submit">Загрузить</button>
 </form>
 
+<h2>Выбрать песню</h2>
+<select id="songList">
+    <option value="">-- выберите песню --</option>
+</select>
+
 <h2>Проигрыватель</h2>
 <audio id="player" controls></audio>
 
@@ -29,7 +34,9 @@
     const form = document.getElementById("uploadForm");
     const fileInput = document.getElementById("fileInput");
     const player = document.getElementById("player");
+    const songList = document.getElementById("songList");
 
+    // загрузка файла
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -41,33 +48,60 @@
 
         const formData = new FormData();
         formData.append("file", file);
-
-        // поля сущности Song
         formData.append("songname", document.getElementById("songname").value);
         formData.append("artist", document.getElementById("artist").value);
         formData.append("genre", document.getElementById("genre").value);
 
         try {
-            // отправляем на контроллер /api/add
             const response = await fetch("/api/add", {
                 method: "POST",
                 body: formData
             });
 
-            if (!response.ok) {
-                throw new Error("Ошибка загрузки");
-            }
+            if (!response.ok) throw new Error("Ошибка загрузки");
 
-            // сервер возвращает JSON с песней
             const song = await response.json();
 
-            // устанавливаем источник для проигрывателя
+            // добавляем новую песню в список
+            const option = document.createElement("option");
+            option.value = encodeURI(song.fileUrl);
+            option.textContent = song.songname;
+            songList.appendChild(option);
+
+            // сразу проигрываем загруженную
             player.src = encodeURI(song.fileUrl);
             player.play();
 
         } catch (err) {
             console.error(err);
             alert("Не удалось загрузить файл");
+        }
+    });
+
+    // загрузка списка песен при входе
+    window.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const response = await fetch("/all");
+            if (!response.ok) throw new Error("Ошибка получения списка песен");
+
+            const songs = await response.json();
+            for (const [name, url] of Object.entries(songs)) {
+                const option = document.createElement("option");
+                option.value = encodeURI(url);
+                option.textContent = name;
+                songList.appendChild(option);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Не удалось загрузить список песен");
+        }
+    });
+
+    // выбор песни
+    songList.addEventListener("change", () => {
+        if (songList.value) {
+            player.src = songList.value;
+            player.play();
         }
     });
 </script>

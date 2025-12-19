@@ -17,6 +17,7 @@ public class Song {
     private String genre;
     private Long durability;
     private String fileUrl;
+    
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "album_id",nullable = true)

@@ -19,7 +19,8 @@ public class Album {
     private String artist;
     private String year;
     private String genre;
-    private String image;
+    @Column(name = "image_url", nullable = true)
+    private String imageurl;
 
     @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

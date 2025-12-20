@@ -26,29 +26,57 @@ public class SongService {
         this.uploadFileService = uploadFileService;
     }
 
-    public void PostSong(Song song, Album album, MultipartFile file) throws IOException {
+//    public void PostSong(Song song, Album album, MultipartFile file) throws IOException {
+//
+//        if (album != null) {
+//            if (album.getId() == null) {
+//
+//                album = albumRepository.save(album);
+//            } else {
+//
+//                album = albumRepository.findById(album.getId())
+//                        .orElseThrow(() -> new IllegalArgumentException("error"));
+//            }
+//            song.setAlbum(album);
+//            if (song.getFileUrl() != null) {
+//                song.setFileUrl("/" + Paths.get(song.getFileUrl()).getFileName().toString());
+//            }
+//        }
+//        if (file != null) {
+//          String fileUrl =  uploadFileService.uploadFile(file);
+//          song.setFileUrl(fileUrl);
+//        }
+//        songRepository.save(song);
+//
+//    }
+public Song addSong(String songname, String artist, String albumTitle,
+                    String genre, MultipartFile file) throws IOException {
 
-        if (album != null) {
-            if (album.getId() == null) {
+    Song song = new Song();
+    song.setSongname(songname);
+    song.setArtist(artist);
+    song.setGenre(genre);
 
-                album = albumRepository.save(album);
-            } else {
 
-                album = albumRepository.findById(album.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("error"));
-            }
-            song.setAlbum(album);
-            if (song.getFileUrl() != null) {
-                song.setFileUrl("/" + Paths.get(song.getFileUrl()).getFileName().toString());
-            }
-        }
-        if (file != null) {
-          String fileUrl =  uploadFileService.uploadFile(file);
-          song.setFileUrl(fileUrl);
-        }
-        songRepository.save(song);
+    if (albumTitle != null && !albumTitle.isBlank()) {
+        albumRepository.findByTitle(albumTitle).ifPresent(song::setAlbum);
+//        Album album = albumRepository.findByTitle(albumTitle).orElse(null);
 
+//        if (album != null) {
+//            song.setAlbum(album);
+//        }
     }
+
+
+    if (file != null && !file.isEmpty()) {
+        String fileUrl = uploadFileService.uploadFile(file);
+        song.setFileUrl(fileUrl);
+    }
+
+    return songRepository.save(song);
+}
+
+
     public void FindAlbumBySong(Song song, Album album) {
         if (album != null) {
             System.out.println(song.getAlbum());

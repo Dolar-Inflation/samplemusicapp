@@ -11,6 +11,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/songs/**")
                 .addResourceLocations("file:uploads/");
+        registry.addResourceHandler("/albums/**")
+                .addResourceLocations("file:image/");
     }
 
 }

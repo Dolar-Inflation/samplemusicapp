@@ -2,89 +2,214 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Загрузка и проигрывание песен</title>
+    <title>Музыкальное приложение</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .album {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            display: inline-block;
+            vertical-align: top;
+            width: 250px;
+        }
+        .album img {
+            max-width: 200px;
+            height: auto;
+        }
+        .album ul {
+            list-style: none;
+            padding: 0;
+        }
+        .album li {
+            margin: 5px 0;
+        }
+    </style>
 </head>
 <body>
-<h2>Загрузить песню</h2>
-<form id="uploadForm">
-    <label>Название песни:</label><br>
-    <input type="text" id="songname" name="songname" required><br><br>
+<h1>Музыкальное приложение</h1>
+
+<!-- Загрузка альбома -->
+<h2>Добавить альбом</h2>
+<form id="albumForm" enctype="multipart/form-data">
+    <label>Название альбома:</label><br>
+    <input type="text" name="title" required><br><br>
 
     <label>Исполнитель:</label><br>
-    <input type="text" id="artist" name="artist" required><br><br>
+    <input type="text" name="artist" required><br><br>
+
+    <label>Год:</label><br>
+    <input type="text" name="year" required><br><br>
 
     <label>Жанр:</label><br>
-    <input type="text" id="genre" name="genre"><br><br>
+    <input type="text" name="genre" required><br><br>
+
+    <label>Обложка альбома:</label><br>
+    <input type="file" name="file" accept="image/*"><br><br>
+
+    <label>Песни:</label><br>
+    <input type="file" name="songFiles" accept="audio/*" multiple><br><br>
+
+    <button type="submit">Добавить альбом</button>
+</form>
+
+<hr>
+
+<!-- Загрузка песни -->
+<h2>Загрузить песню</h2>
+<form id="uploadForm" enctype="multipart/form-data">
+    <label>Название песни:</label><br>
+    <input type="text" name="songname" required><br><br>
+
+    <label>Исполнитель:</label><br>
+    <input type="text" name="artist" required><br><br>
+
+    <label>Жанр:</label><br>
+    <input type="text" name="genre"><br><br>
 
     <label>Файл:</label><br>
-    <input type="file" id="fileInput" name="file" accept="audio/*" required><br><br>
+    <input type="file" name="file" accept="audio/*" required><br><br>
+
+    <label>Добавить в альбом:</label><br>
+    <select name="albumTitle" id="albumSelect">
+        <option value="">-- без альбома --</option>
+    </select><br><br>
 
     <button type="submit">Загрузить</button>
 </form>
 
-<h2>Выбрать песню</h2>
+<hr>
+
+<!-- Список альбомов -->
+<h2>Альбомы</h2>
+<div id="albumsContainer"></div>
+
+<hr>
+
+<!-- Список всех песен -->
+<h2>Все песни</h2>
 <select id="songList">
     <option value="">-- выберите песню --</option>
 </select>
+
+<hr>
 
 <h2>Проигрыватель</h2>
 <audio id="player" controls></audio>
 
 <script>
-    const form = document.getElementById("uploadForm");
-    const fileInput = document.getElementById("fileInput");
+    const albumForm = document.getElementById("albumForm");
+    const uploadForm = document.getElementById("uploadForm");
     const player = document.getElementById("player");
+    const albumsContainer = document.getElementById("albumsContainer");
+    const albumSelect = document.getElementById("albumSelect");
     const songList = document.getElementById("songList");
 
-    // загрузка файла
-    form.addEventListener("submit", async (e) => {
+    // загрузка альбома
+    albumForm.addEventListener("submit", async (e) => {
         e.preventDefault();
+        const formData = new FormData(albumForm);
 
-        const file = fileInput.files[0];
-        if (!file) {
-            alert("Выберите файл!");
-            return;
+        try {
+            const response = await fetch("/api", {
+                method: "POST",
+                body: formData
+            });
+            if (!response.ok) throw new Error("Ошибка добавления альбома");
+            const album = await response.json();
+            alert("Альбом добавлен: " + album.title);
+            loadAlbums();
+            loadSongs();
+        } catch (err) {
+            console.error(err);
+            alert("Не удалось добавить альбом");
         }
+    });
 
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("songname", document.getElementById("songname").value);
-        formData.append("artist", document.getElementById("artist").value);
-        formData.append("genre", document.getElementById("genre").value);
+    // загрузка песни
+    uploadForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(uploadForm);
 
         try {
             const response = await fetch("/api/add", {
                 method: "POST",
                 body: formData
             });
-
             if (!response.ok) throw new Error("Ошибка загрузки");
-
             const song = await response.json();
-
-            // добавляем новую песню в список
-            const option = document.createElement("option");
-            option.value = encodeURI(song.fileUrl);
-            option.textContent = song.songname;
-            songList.appendChild(option);
-
-            // сразу проигрываем загруженную
-            player.src = encodeURI(song.fileUrl);
-            player.play();
-
+            alert("Песня добавлена: " + song.songname);
+            loadAlbums();
+            loadSongs();
         } catch (err) {
             console.error(err);
             alert("Не удалось загрузить файл");
         }
     });
 
-    // загрузка списка песен при входе
-    window.addEventListener("DOMContentLoaded", async () => {
+    // загрузка альбомов и их песен
+    async function loadAlbums() {
         try {
-            const response = await fetch("/all");
-            if (!response.ok) throw new Error("Ошибка получения списка песен");
+            const response = await fetch("/api/all/albums");
+            if (!response.ok) throw new Error("Ошибка получения альбомов");
+            const albums = await response.json();
+            albumsContainer.innerHTML = "";
+            albumSelect.innerHTML = '<option value="">-- без альбома --</option>';
 
+            for (const [title, imageUrl] of Object.entries(albums)) {
+                const div = document.createElement("div");
+                div.className = "album";
+                div.innerHTML = `
+                    <img src="${imageUrl}" alt="${title}">
+                    <p><strong>${title}</strong></p>
+                    <ul id="songs-${title}"></ul>
+                `;
+                albumsContainer.appendChild(div);
+
+                // добавляем альбом в select
+                const option = document.createElement("option");
+                option.value = title;
+                option.textContent = title;
+                albumSelect.appendChild(option);
+
+                // подтягиваем песни альбома
+                try {
+                    const songsResp = await fetch(`/api/albums/${encodeURIComponent(title)}/songs`);
+                    if (songsResp.ok) {
+                        const songs = await songsResp.json();
+                        const ul = document.getElementById(`songs-${title}`);
+                        if (songs.length === 0) {
+                            ul.innerHTML = "<li><em>Нет песен</em></li>";
+                        } else {
+                            songs.forEach(song => {
+                                const li = document.createElement("li");
+                                li.innerHTML = `
+                                    ${song.songname}
+                                    <button onclick="playSong('${song.fileUrl}')">▶</button>
+                                `;
+                                ul.appendChild(li);
+                            });
+                        }
+                    }
+                } catch (err) {
+                    console.error("Не удалось загрузить песни альбома", err);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Не удалось загрузить альбомы");
+        }
+    }
+
+    // загрузка всех песен
+    async function loadSongs() {
+        try {
+            const response = await fetch("/api/all");
+            if (!response.ok) throw new Error("Ошибка получения списка песен");
             const songs = await response.json();
+            songList.innerHTML = '<option value="">-- выберите песню --</option>';
             for (const [name, url] of Object.entries(songs)) {
                 const option = document.createElement("option");
                 option.value = encodeURI(url);
@@ -95,14 +220,23 @@
             console.error(err);
             alert("Не удалось загрузить список песен");
         }
-    });
+    }
 
-    // выбор песни
+    function playSong(url) {
+        player.src = encodeURI(url);
+        player.play();
+    }
+
     songList.addEventListener("change", () => {
         if (songList.value) {
             player.src = songList.value;
             player.play();
         }
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+        loadAlbums();
+        loadSongs();
     });
 </script>
 </body>

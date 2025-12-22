@@ -3,6 +3,7 @@ package com.messenger.samplemusicapp.Controller;
 import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
+import com.messenger.samplemusicapp.Records.AlbumInfo;
 import com.messenger.samplemusicapp.Repository.AlbumRepository;
 import com.messenger.samplemusicapp.Services.AccountService;
 import com.messenger.samplemusicapp.Services.AlbumService;
@@ -35,7 +36,7 @@ public class AlbumController {
     }
 
     @GetMapping("/all/albums")
-    public Map<String,String> getAllAlbums() {
+    public Map<String, AlbumInfo> getAllAlbums() {
         logger.info(albumService.getAllAlbums().toString());
         return albumService.getAllAlbums();
 

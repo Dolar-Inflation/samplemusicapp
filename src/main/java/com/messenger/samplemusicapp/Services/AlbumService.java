@@ -3,6 +3,7 @@ package com.messenger.samplemusicapp.Services;
 import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
+import com.messenger.samplemusicapp.Records.AlbumInfo;
 import com.messenger.samplemusicapp.Repository.AlbumRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,12 +24,15 @@ public class AlbumService {
         this.uploadFileService = uploadFileService;
     }
 
-    public Map<String,String> getAllAlbums() {
+    public Map<String, AlbumInfo> getAllAlbums() {
 
         return albumRepository.findAll()
                 .stream()
-                .filter(a -> a.getTitle() != null && a.getImageurl() != null)
-                .collect(Collectors.toMap(Album::getTitle, Album::getImageurl));
+                .filter(a -> a.getTitle() != null && a.getImageurl() != null )
+                .collect(Collectors.toMap(
+                        Album::getTitle,
+                       a->new AlbumInfo(a.getImageurl(),
+                               a.getAccount() != null ? a.getAccount().getUsername() : "неизвестно")));
     }
 
     public Album createAlbum(Album album, List<MultipartFile> songFiles, Account account, MultipartFile image) throws IOException {

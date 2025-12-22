@@ -183,22 +183,22 @@
 
     // загрузка альбомов и их песен
     async function loadAlbums() {
-        const response = await fetch("/api/all/albums", { credentials: "include" });
+        const response = await fetch("/api/all/albums", {credentials: "include"});
         if (!response.ok) throw new Error("Ошибка получения альбомов");
         const albums = await response.json();
 
         albumsContainer.innerHTML = "";
         albumSelect.innerHTML = '<option value="">-- без альбома --</option>';
 
-        Object.entries(albums).forEach(([title, imageUrl]) => {
+        Object.entries(albums).forEach(([title, info]) => {
             const div = document.createElement("div");
             div.className = "album";
             div.innerHTML = `
-            <img src="${imageUrl}" alt="${title}">
-            <p><strong>${title}</strong></p>
-            <p id="author-${title}"><em>Автор альбома: неизвестно</em></p>
-            <ul id="songs-${title}"></ul>
-        `;
+        <img src="${info.imageurl}" alt="${title}">
+        <p><strong>${title}</strong></p>
+        <p><em>Автор альбома: ${info.username}</em></p>
+        <ul id="songs-${title}"></ul>
+    `;
             albumsContainer.appendChild(div);
 
             const option = document.createElement("option");
@@ -206,25 +206,20 @@
             option.textContent = title;
             albumSelect.appendChild(option);
 
-            fetch(`/api/albums/${encodeURIComponent(title)}/songs`, { credentials: "include" })
+            fetch(`/api/albums/${encodeURIComponent(title)}/songs`, {credentials: "include"})
                 .then(r => r.json())
                 .then(songs => {
                     const ul = document.getElementById(`songs-${title}`);
                     if (songs.length === 0) {
                         ul.innerHTML = "<li><em>Нет песен</em></li>";
                     } else {
-                        // показать никнейм аккаунта по первой песне
-                        const author = songs[0].account?.username || songs[0].artist;
-                        document.getElementById(`author-${title}`).innerHTML =
-                            `<em>Автор альбома: ${author}</em>`;
-
                         songs.forEach(song => {
                             const li = document.createElement("li");
                             li.innerHTML = `
-                            ${song.songname}
-                            <span style="color: gray"> (от ${song.account?.username || song.artist})</span>
-                            <button onclick="playSong('${song.fileUrl}')">▶</button>
-                        `;
+                        ${song.songname}
+                        <span style="color: gray"> (от ${song.account?.username || song.artist})</span>
+                        <button onclick="playSong('${song.fileUrl}')">▶</button>
+                    `;
                             ul.appendChild(li);
                         });
                     }
@@ -233,7 +228,7 @@
     }
 
 
-    // загрузка всех песен
+        // загрузка всех песен
     async function loadSongs() {
         try {
             const response = await fetch("/api/all");

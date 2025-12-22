@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Авторизация</title>
+</head>
+<body>
+<h2>Регистрация</h2>
+<form id="registerForm">
+    <label for="regUsername">Логин:</label>
+    <input type="text" id="regUsername" name="username" required>
+    <label for="regPassword">Пароль:</label>
+    <input type="password" id="regPassword" name="password" required>
+    <button type="submit">Зарегистрироваться</button>
+</form>
+
+<h2>Вход</h2>
+<form id="loginForm">
+    <label for="loginUsername">Логин:</label>
+    <input type="text" id="loginUsername" name="username" required>
+    <label for="loginPassword">Пароль:</label>
+    <input type="password" id="loginPassword" name="password" required>
+    <button type="submit">Войти</button>
+</form>
+
+<div id="result"></div>
+
+<script>
+    async function sendRequest(url, data) {
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data),
+                credentials: "include"
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                document.getElementById("result").innerText = "Ошибка: " + errorText;
+                return;
+            }
+
+            const result = await response.json();
+            document.getElementById("result").innerText = "Успешно: " + JSON.stringify(result);
+
+            // редиректим после успешного логина
+            if (url === "/api/login") {
+                window.location.href = "/html/index.html";
+            }
+        } catch (err) {
+            document.getElementById("result").innerText = "Ошибка сети: " + err;
+        }
+    }
+
+    document.getElementById("registerForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const data = {
+            username: document.getElementById("regUsername").value,
+            password: document.getElementById("regPassword").value
+        };
+        sendRequest("/api/register", data);
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const data = {
+            username: document.getElementById("loginUsername").value,
+            password: document.getElementById("loginPassword").value
+        };
+        sendRequest("/api/login", data);
+    });
+</script>
+
+</body>
+</html>

@@ -1,8 +1,10 @@
 package com.messenger.samplemusicapp.Controller;
 
+import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
 import com.messenger.samplemusicapp.Repository.AlbumRepository;
+import com.messenger.samplemusicapp.Services.AccountService;
 import com.messenger.samplemusicapp.Services.AlbumService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,11 +25,13 @@ public class AlbumController {
     private final AlbumService albumService;
     private final ObjectMapper mapper;
     private final Logger logger = LoggerFactory.getLogger(AlbumController.class);
+    private final AccountService accountService;
 
-    public AlbumController(AlbumService albumService, ObjectMapper mapper) {
+    public AlbumController(AlbumService albumService, ObjectMapper mapper, AccountService accountService) {
 
         this.albumService = albumService;
         this.mapper = mapper;
+        this.accountService = accountService;
     }
 
     @GetMapping("/all/albums")
@@ -47,6 +52,7 @@ public class AlbumController {
                           @RequestParam String artist,
                           @RequestParam String year,
                           @RequestParam String genre,
+                          Principal principal,
                           @RequestParam("file") MultipartFile file,
                           @RequestParam List<MultipartFile> songFiles
 
@@ -62,7 +68,10 @@ public class AlbumController {
 //
 //            songs = Arrays.asList(mapper.readValue(songsJson, Song[].class));
 //        }
-        albumService.createAlbum(album,songFiles,file);
+
+
+        Account account = accountService.findByUsername(principal.getName());
+        albumService.createAlbum(album,songFiles,account,file);
         logger.info(album.toString());
         return album;
 

@@ -1,5 +1,6 @@
 package com.messenger.samplemusicapp.Services;
 
+import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
 import com.messenger.samplemusicapp.Repository.AlbumRepository;
@@ -50,12 +51,13 @@ public class SongService {
 //
 //    }
 public Song addSong(String songname, String artist, String albumTitle,
-                    String genre, MultipartFile file) throws IOException {
+                    String genre, Account account, MultipartFile file) throws IOException {
 
     Song song = new Song();
     song.setSongname(songname);
     song.setArtist(artist);
     song.setGenre(genre);
+    song.setAccount(account);
 
 
     if (albumTitle != null && !albumTitle.isBlank()) {

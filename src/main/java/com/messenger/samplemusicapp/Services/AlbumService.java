@@ -1,5 +1,6 @@
 package com.messenger.samplemusicapp.Services;
 
+import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
 import com.messenger.samplemusicapp.Repository.AlbumRepository;
@@ -30,13 +31,13 @@ public class AlbumService {
                 .collect(Collectors.toMap(Album::getTitle, Album::getImageurl));
     }
 
-    public Album createAlbum(Album album, List<MultipartFile> songFiles, MultipartFile image) throws IOException {
+    public Album createAlbum(Album album, List<MultipartFile> songFiles, Account account, MultipartFile image) throws IOException {
         if (image != null && !image.isEmpty()) {
-
+            album.setAccount(account);
             String savedFileName = uploadFileService.uploadImage(image);
             album.setImageurl( savedFileName);
         } else {
-
+            album.setAccount(account);
             album.setImageurl("/resources/default.png");
         }
         if (songFiles != null && !songFiles.isEmpty()) {
@@ -48,6 +49,7 @@ public class AlbumService {
                 song.setGenre(album.getGenre());
                 song.setFileUrl(songUrl);
                 song.setAlbum(album);
+
                 album.getSongs().add(song);
             }
         }

@@ -1,0 +1,53 @@
+body {
+    font-family: Arial, sans-serif;
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f0f0f0;
+    padding: 10px;
+}
+#userInfo {
+    font-weight: bold;
+}
+.album {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px;
+    display: inline-block;
+    vertical-align: top;
+    width: 250px;
+}
+.album img {
+    max-width: 200px;
+    height: auto;
+}
+.album ul {
+    list-style: none;
+    padding: 0;
+}
+.album li {
+    margin: 5px 0;
+}
+.like-btn {
+    background: none;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+.like-btn:disabled {
+    color: red;
+    border-color: red;
+    cursor: default;
+}
+nav a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: #d00;
+    font-weight: bold;
+}
+nav a:hover {
+    text-decoration: underline;
+}

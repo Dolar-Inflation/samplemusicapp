@@ -36,4 +36,14 @@ public class Account {
             joinColumns = @JoinColumn(name = "account_id"),
             inverseJoinColumns = @JoinColumn(name = "song_id"))
     private Set<Song> favoriteSongs = new HashSet<>();
+
+
+    @ManyToMany
+    @JoinTable(name = "account_favorite_albums",
+    joinColumns = @JoinColumn(name = "account_id"),
+    inverseJoinColumns = @JoinColumn(name = "album_id"))
+    private Set<Album> favoriteAlbums = new HashSet<>();
+
+
+
 }

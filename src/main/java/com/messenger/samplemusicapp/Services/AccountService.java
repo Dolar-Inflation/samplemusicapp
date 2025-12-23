@@ -1,8 +1,12 @@
 package com.messenger.samplemusicapp.Services;
 
 import com.messenger.samplemusicapp.Entity.Account;
+import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Repository.AccountRepository;
 import org.springframework.stereotype.Service;
+
+import java.security.Principal;
+import java.util.List;
 
 @Service
 public class AccountService {
@@ -22,5 +26,9 @@ public Account findByUsername(String username) {
         return account;
 }
 
+
+    public void save(Account account) {
+        accountRepository.save(account);
+    }
 
 }

@@ -48,7 +48,7 @@ public class SecurityConfig  {
                                 "/api/login",
                                 "/me"
                         ).permitAll()
-                        .requestMatchers("/html/index.html").authenticated()
+                        .requestMatchers("/html/index.html","/html/favorites.html").authenticated()
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())

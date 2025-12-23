@@ -10,8 +10,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,9 +22,11 @@ public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final UploadFileService uploadFileService;
-    public AlbumService(AlbumRepository albumRepository, UploadFileService uploadFileService) {
+    private final AccountService accountService;
+    public AlbumService(AlbumRepository albumRepository, UploadFileService uploadFileService, AccountService accountService) {
         this.albumRepository = albumRepository;
         this.uploadFileService = uploadFileService;
+        this.accountService = accountService;
     }
 
     public Map<String, AlbumInfo> getAllAlbums() {
@@ -32,7 +37,7 @@ public class AlbumService {
                 .collect(Collectors.toMap(
                         Album::getTitle,
                        a->new AlbumInfo(a.getImageurl(),
-                               a.getAccount() != null ? a.getAccount().getUsername() : "неизвестно")));
+                               a.getAccount() != null ? a.getAccount().getUsername() : "неизвестно",a.getId())));
     }
 
     public Album createAlbum(Album album, List<MultipartFile> songFiles, Account account, MultipartFile image) throws IOException {
@@ -71,6 +76,9 @@ public class AlbumService {
                 .map(Album::getSongs)
                 .orElse(List.of());
     }
+    public Album findAlbumById(Long id) {
+        return albumRepository.findById(id).get();
+    }
 
     public void addSongToAlbum(Album album,Song song) {
         album.getSongs().add(song);
@@ -79,5 +87,13 @@ public class AlbumService {
     public void removeSongFromAlbum(Album album,Song song) {
         album.getSongs().remove(song);
         albumRepository.save(album);
+    }
+    public Set<Album> getAllFavoriteAlbums(Principal principal) {
+
+        Account account = accountService.findByUsername(principal.getName());
+//        List<Album> albums = (List<Album>) account.getFavoriteAlbums();
+//        return albums;
+        return account.getFavoriteAlbums();
+
     }
 }

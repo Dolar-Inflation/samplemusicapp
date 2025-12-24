@@ -49,7 +49,7 @@ public class AlbumService {
             album.setAccount(account);
             album.setImageurl("/resources/default.png");
         }
-        if (songFiles != null && !songFiles.isEmpty()) {
+//        if (songFiles != null && !songFiles.isEmpty()) {
             for (MultipartFile file : songFiles) {
                 String songUrl = uploadFileService.uploadFile(file);
                 Song song = new Song();
@@ -60,7 +60,7 @@ public class AlbumService {
                 song.setAlbum(album);
 
                 album.getSongs().add(song);
-            }
+//            }
         }
 
 

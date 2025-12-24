@@ -40,7 +40,7 @@ public class AlbumController {
         logger.info(albumService.getAllAlbums().toString());
         return albumService.getAllAlbums();
 
-    }
+    }//мб map(album,List<Song>)?
     @GetMapping("/albums/{title}/songs")
     public List<Song> getAllAlbumsSongs(@PathVariable String title) {
         logger.info(albumService.getSongsByAlbum(title).toString());

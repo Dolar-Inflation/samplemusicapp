@@ -1,6 +1,7 @@
 package com.messenger.samplemusicapp.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,6 +33,7 @@ public class Account {
     private List<Song> createdSongs = new ArrayList<>();
 
     @ManyToMany
+    @JsonManagedReference(value = "account-songs")
     @JoinTable(name = "account_favorite_songs",
             joinColumns = @JoinColumn(name = "account_id"),
             inverseJoinColumns = @JoinColumn(name = "song_id"))
@@ -39,6 +41,7 @@ public class Account {
 
 
     @ManyToMany
+    @JsonManagedReference(value = "account-albums")
     @JoinTable(name = "account_favorite_albums",
     joinColumns = @JoinColumn(name = "account_id"),
     inverseJoinColumns = @JoinColumn(name = "album_id"))

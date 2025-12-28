@@ -1,5 +1,6 @@
 package com.messenger.samplemusicapp.Controller;
 
+import com.messenger.samplemusicapp.DTO.AlbumDTO;
 import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
@@ -49,13 +50,13 @@ public class AlbumController {
 
 
     @PostMapping
-    public Album addAlbum(@RequestParam String title,
-                          @RequestParam String artist,
-                          @RequestParam String year,
-                          @RequestParam String genre,
-                          Principal principal,
-                          @RequestParam("file") MultipartFile file,
-                          @RequestParam List<MultipartFile> songFiles
+    public AlbumDTO addAlbum(@RequestParam String title,
+                             @RequestParam String artist,
+                             @RequestParam String year,
+                             @RequestParam String genre,
+                             Principal principal,
+                             @RequestParam("file") MultipartFile file,
+                             @RequestParam List<MultipartFile> songFiles
 
     ) throws IOException {
 
@@ -72,9 +73,9 @@ public class AlbumController {
 
 
         Account account = accountService.findByUsername(principal.getName());
-        albumService.createAlbum(album,songFiles,account,file);
+
         logger.info(album.toString());
-        return album;
+        return albumService.createAlbum(album,songFiles,account,file);/*album;*/
 
 
 

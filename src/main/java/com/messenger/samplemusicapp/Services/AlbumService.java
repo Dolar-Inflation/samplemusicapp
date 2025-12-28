@@ -1,8 +1,10 @@
 package com.messenger.samplemusicapp.Services;
 
+import com.messenger.samplemusicapp.DTO.AlbumDTO;
 import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
+import com.messenger.samplemusicapp.Mappers.AlbumMapper;
 import com.messenger.samplemusicapp.Records.AlbumInfo;
 import com.messenger.samplemusicapp.Repository.AlbumRepository;
 import org.springframework.stereotype.Service;
@@ -23,10 +25,12 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final UploadFileService uploadFileService;
     private final AccountService accountService;
-    public AlbumService(AlbumRepository albumRepository, UploadFileService uploadFileService, AccountService accountService) {
+    private final AlbumMapper albumMapper;
+    public AlbumService(AlbumRepository albumRepository, UploadFileService uploadFileService, AccountService accountService, AlbumMapper albumMapper) {
         this.albumRepository = albumRepository;
         this.uploadFileService = uploadFileService;
         this.accountService = accountService;
+        this.albumMapper = albumMapper;
     }
 
     public Map<String, AlbumInfo> getAllAlbums() {
@@ -40,7 +44,7 @@ public class AlbumService {
                                a.getAccount() != null ? a.getAccount().getUsername() : "неизвестно",a.getId())));
     }
 
-    public Album createAlbum(Album album, List<MultipartFile> songFiles, Account account, MultipartFile image) throws IOException {
+    public AlbumDTO createAlbum(Album album, List<MultipartFile> songFiles, Account account, MultipartFile image) throws IOException {
         if (image != null && !image.isEmpty()) {
             album.setAccount(account);
             String savedFileName = uploadFileService.uploadImage(image);
@@ -63,8 +67,8 @@ public class AlbumService {
 //            }
         }
 
-
-        return albumRepository.save(album);
+        albumRepository.save(album);
+        return albumMapper.toAlbumDTO(album);
     }
     public Album DeleteAlbumById(Long id) {
         Album album = albumRepository.findById(id).get();

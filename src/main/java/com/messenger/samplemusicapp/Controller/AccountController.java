@@ -1,5 +1,6 @@
 package com.messenger.samplemusicapp.Controller;
 
+import com.messenger.samplemusicapp.DTO.SongDTO;
 import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
@@ -61,7 +62,7 @@ public class AccountController {
         return account;
     }
     @GetMapping("/my/favorites/songs")
-    public Set<Song> getFavoriteSongs(Principal principal){
+    public Set<SongDTO> getFavoriteSongs(Principal principal){
         return songService.getAllFavoriteSongs(principal);
     }
     @GetMapping("/my/favorites")

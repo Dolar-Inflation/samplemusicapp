@@ -1,8 +1,10 @@
 package com.messenger.samplemusicapp.Services;
 
+import com.messenger.samplemusicapp.DTO.SongDTO;
 import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
+import com.messenger.samplemusicapp.Mappers.SongMapper;
 import com.messenger.samplemusicapp.Records.SongInfo;
 import com.messenger.samplemusicapp.Repository.AlbumRepository;
 import com.messenger.samplemusicapp.Repository.SongRepository;
@@ -20,45 +22,24 @@ import java.util.stream.Collectors;
 
 @Service
 public class SongService {
-
+    private final SongMapper songMapper;
     private final SongRepository songRepository;
     private final AlbumRepository albumRepository;
     private final UploadFileService uploadFileService;
     private final AccountService accountService;
 
-    public SongService(SongRepository songRepository, AlbumRepository albumRepository, UploadFileService uploadFileService, AccountService accountService) {
+    public SongService(SongMapper songMapper, SongRepository songRepository, AlbumRepository albumRepository, UploadFileService uploadFileService, AccountService accountService) {
+        this.songMapper = songMapper;
         this.songRepository = songRepository;
         this.albumRepository = albumRepository;
         this.uploadFileService = uploadFileService;
         this.accountService = accountService;
     }
 
-//    public void PostSong(Song song, Album album, MultipartFile file) throws IOException {
-//
-//        if (album != null) {
-//            if (album.getId() == null) {
-//
-//                album = albumRepository.save(album);
-//            } else {
-//
-//                album = albumRepository.findById(album.getId())
-//                        .orElseThrow(() -> new IllegalArgumentException("error"));
-//            }
-//            song.setAlbum(album);
-//            if (song.getFileUrl() != null) {
-//                song.setFileUrl("/" + Paths.get(song.getFileUrl()).getFileName().toString());
-//            }
-//        }
-//        if (file != null) {
-//          String fileUrl =  uploadFileService.uploadFile(file);
-//          song.setFileUrl(fileUrl);
-//        }
-//        songRepository.save(song);
-//
-//    }
-public Song addSong(String songname, String artist, String albumTitle,
-                    String genre, Account account, MultipartFile file) throws IOException {
 
+public SongDTO addSong(String songname, String artist, String albumTitle,
+                       String genre, Account account, MultipartFile file) throws IOException {
+    Song song = new Song();
     Album album = null;
     if (albumTitle != null && !albumTitle.isBlank()) {
         album = albumRepository.findByTitle(albumTitle).orElse(null);
@@ -67,10 +48,10 @@ public Song addSong(String songname, String artist, String albumTitle,
     if (album != null) {
         Optional<Song> existing = songRepository.findBySongnameAndAlbum(songname, album);
         if (existing.isPresent()) {
-            return existing.get();
+            return songMapper.SongToDTO(existing.get());
         }
     }
-    Song song = new Song();
+
     song.setSongname(songname);
     song.setArtist(artist);
     song.setGenre(genre);
@@ -86,25 +67,27 @@ public Song addSong(String songname, String artist, String albumTitle,
     if (file != null && !file.isEmpty()) {
         String fileUrl = uploadFileService.uploadFile(file);
         song.setFileUrl(fileUrl);
-        return songRepository.save(song);
+        Song savedSong = songRepository.save(song);
+        return songMapper.SongToDTO(savedSong);
     }
     else {
-        return song;
+        SongDTO songDTO = songMapper.SongToDTO(song);
+        return songDTO;
     }
 
 
 }
 
 
-    public void FindAlbumBySong(Song song, Album album) {
-        if (album != null) {
-            System.out.println(song.getAlbum());
-            System.out.println(song.getAlbum().getTitle());
-        }
-        else throw new NullPointerException("Album is null"); {
-
-        }
-    }
+//    public void FindAlbumBySong(Song song, Album album) {
+//        if (album != null) {
+//            System.out.println(song.getAlbum());
+//            System.out.println(song.getAlbum().getTitle());
+//        }
+//        else throw new NullPointerException("Album is null"); {
+//
+//        }
+//    }
 
     public Map<String, SongInfo> getAllSongs() {
 
@@ -116,19 +99,21 @@ public Song addSong(String songname, String artist, String albumTitle,
                         song -> new SongInfo(song.getFileUrl(),
                                 song.getId()),(s1, s2) -> s1));
 
-//                        Song::getFileUrl,
-//                        (url1, url2) -> url1  ));
-//                .map(Song::getSongname,Song::getFileUrl)
-//                .collect(Collectors.toList());
+
 
     }
-    public Set<Song> getAllFavoriteSongs(Principal principal) {
+    public Set<SongDTO> getAllFavoriteSongs(Principal principal) {
         Account account = accountService.findByUsername(principal.getName());
-        return account.getFavoriteSongs();
+
+        return account.getFavoriteSongs()
+                .stream()
+                .map(songMapper::SongToDTO)
+                .collect(Collectors.toSet());
     }
 
 
     public Song getSongById(Long id) {
+
         return songRepository.findById(id).orElse(null);
     }
 

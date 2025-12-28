@@ -1,5 +1,6 @@
 package com.messenger.samplemusicapp.Controller;
 
+import com.messenger.samplemusicapp.DTO.SongDTO;
 import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
@@ -35,12 +36,12 @@ public class SongController {
     }
 
     @PostMapping("/add")
-    public Song addSong(@RequestParam("songname") String songname,
-                        @RequestParam("artist") String artist,
-                        Principal principal,
-                        @RequestParam(value = "albumTitle", required = false) String albumTitle,
-                        @RequestParam(value = "genre", required = false) String genre,
-                        @RequestParam("file") MultipartFile file) throws IOException {
+    public SongDTO addSong(@RequestParam("songname") String songname,
+                           @RequestParam("artist") String artist,
+                           Principal principal,
+                           @RequestParam(value = "albumTitle", required = false) String albumTitle,
+                           @RequestParam(value = "genre", required = false) String genre,
+                           @RequestParam("file") MultipartFile file) throws IOException {
 
        Account account=accountService.findByUsername(principal.getName());
         logger.info(songService.addSong(songname,artist,albumTitle,genre,account,file).toString());

@@ -1,9 +1,11 @@
 package com.messenger.samplemusicapp.Controller;
 
+import com.messenger.samplemusicapp.DTO.AccountDTO;
 import com.messenger.samplemusicapp.DTO.SongDTO;
 import com.messenger.samplemusicapp.Entity.Account;
 import com.messenger.samplemusicapp.Entity.Album;
 import com.messenger.samplemusicapp.Entity.Song;
+import com.messenger.samplemusicapp.Mappers.AccountMapper;
 import com.messenger.samplemusicapp.Services.AccountService;
 import com.messenger.samplemusicapp.Services.AlbumService;
 import com.messenger.samplemusicapp.Services.SongService;
@@ -23,11 +25,13 @@ public class AccountController {
     private final AccountService accountService;
     private final AlbumService albumService;
     private final SongService songService;
+    private final AccountMapper accountMapper;
 
-    public AccountController(AccountService accountService, AlbumService albumService, SongService songService) {
+    public AccountController(AccountService accountService, AlbumService albumService, SongService songService, AccountMapper accountMapper) {
         this.accountService = accountService;
         this.albumService = albumService;
         this.songService = songService;
+        this.accountMapper = accountMapper;
     }
 
 
@@ -52,14 +56,14 @@ public class AccountController {
         return account;
     }
     @PostMapping("/favorites/songs")
-    public Account addFavoriteSongToAccount(Principal principal,@RequestParam Long songId){
+    public AccountDTO addFavoriteSongToAccount(Principal principal, @RequestParam Long songId){
         Account account = accountService.findByUsername(principal.getName());
         Song song = songService.getSongById(songId);
         if (!account.getFavoriteSongs().contains(song)) {
             account.getFavoriteSongs().add(song);
             accountService.save(account);
         }
-        return account;
+        return accountMapper.accountToAccountDTO(account);
     }
     @GetMapping("/my/favorites/songs")
     public Set<SongDTO> getFavoriteSongs(Principal principal){

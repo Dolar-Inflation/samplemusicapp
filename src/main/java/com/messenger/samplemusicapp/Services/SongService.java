@@ -113,8 +113,9 @@ public SongDTO addSong(String songname, String artist, String albumTitle,
 
 
     public Song getSongById(Long id) {
-
-        return songRepository.findById(id).orElse(null);
+       Song song = songRepository.findById(id).orElse(null);
+        /*songMapper.SongToDTO(song);*/
+        return song;
     }
 
 

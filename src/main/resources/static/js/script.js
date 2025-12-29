@@ -78,7 +78,6 @@ uploadForm?.addEventListener("submit", async (e) => {
             headers: { ...csrfHeaders() }
         });
         if (!response.ok) throw new Error("Ошибка загрузки песни");
-        // await response.json();
         await loadAlbums();
         await loadSongs();
     } catch (err) {
@@ -95,8 +94,7 @@ async function loadAlbums() {
     try {
         const response = await fetch("/api/all/albums", { credentials: "include" });
         if (!response.ok) throw new Error("Ошибка получения альбомов");
-         const albums = await response.json();
-
+        const albums = await response.json();
 
         albumsContainer.innerHTML = "";
         albumSelect.innerHTML = '<option value="">-- без альбома --</option>';
@@ -108,7 +106,9 @@ async function loadAlbums() {
                 <img src="${info.imageurl}" alt="${title}">
                 <p><strong>${title}</strong></p>
                 <p><em>Автор альбома: ${info.username}</em></p>
-                <button class="like-album-btn" data-id="${info.id}">${info.isFavorite === true || info.favorite === true ? "❤ В избранном" : "❤ Лайк"}</button>
+                <button type="button" class="like-album-btn" data-id="${info.id}">
+                    ${info.isFavorite === true || info.favorite === true ? "❤ В избранном" : "❤ Лайк"}
+                </button>
                 <ul id="songs-${title}"></ul>
             `;
             albumsContainer.appendChild(div);
@@ -127,19 +127,17 @@ async function loadAlbums() {
                 })
                 .then(songs => {
                     const ul = document.getElementById(`songs-${title}`);
-                    console.log(songs)
                     if (!Array.isArray(songs) || songs.length === 0) {
                         ul.innerHTML = "<li><em>Нет песен</em></li>";
                     } else {
-
                         songs.forEach(song => {
                             const url = song.fileUrl || song.fileurl || "";
                             const li = document.createElement("li");
                             li.innerHTML = `
                                 ${song.songname}
                                 <span style="color: gray"> (от ${song.account?.username || song.artist || "неизвестно"})</span>
-                                <button type="button" onclick="playSong('${encodeURI(url)}')">▶</button>
-                                <button class="like-song-btn" data-id="${song.id}">❤ Лайк</button>
+                                <button type="button" class="play-btn" data-url="${encodeURI(url)}">▶</button>
+                                <button type="button" class="like-song-btn" data-id="${song.id}">❤ Лайк</button>
                             `;
                             ul.appendChild(li);
                         });
@@ -155,9 +153,28 @@ async function loadAlbums() {
     }
 }
 
-// ====== Общий обработчик лайков ======
+// ====== Общий обработчик кликов ======
 document.addEventListener("click", async (e) => {
     const target = e.target;
+
+    // Проигрывание песни
+    if (target.classList.contains("play-btn")) {
+        const url = target.dataset.url;
+        if (!url) return;
+        try {
+            if (!player) {
+                console.error("Аудиоплеер #player не найден");
+                return;
+            }
+            player.src = url;
+            // В клике браузеры разрешают autoplay, но все равно ловим ошибки
+            await player.play();
+        } catch (err) {
+            console.error("Не удалось проиграть трек", err);
+            alert("Не удалось проиграть трек");
+        }
+        return;
+    }
 
     // Лайк альбома
     if (target.classList.contains("like-album-btn")) {
@@ -182,9 +199,10 @@ document.addEventListener("click", async (e) => {
             alert("Не удалось добавить альбом в избранное");
             target.disabled = false;
         }
+        return;
     }
 
-    // Лайк песни (в списке альбома или в общем списке)
+    // Лайк песни
     if (target.classList.contains("like-song-btn")) {
         const songId = target.dataset.id;
         if (!songId) return;
@@ -207,6 +225,7 @@ document.addEventListener("click", async (e) => {
             alert("Не удалось добавить песню в избранное");
             target.disabled = false;
         }
+        return;
     }
 });
 
@@ -225,15 +244,15 @@ async function loadSongs() {
 
         // songs — это Map: { songname: { fileUrl, id } }
         Object.entries(songs).forEach(([name, info]) => {
-            const url = info?.fileUrl || "";
+            const url = info?.fileurl || "";
             const id = info?.id;
 
             const div = document.createElement("div");
             div.className = "song";
             div.innerHTML = `
                 <p><strong>${name}</strong></p>
-                <button onclick="playSong('${encodeURI(url)}')">▶</button>
-                <button class="like-song-btn" data-id="${id}">❤ Лайк</button>
+                <button type="button" class="play-btn" data-url="${encodeURI(url)}">▶</button>
+                <button type="button" class="like-song-btn" data-id="${id}">❤ Лайк</button>
             `;
             allSongsContainer.appendChild(div);
         });
@@ -242,14 +261,6 @@ async function loadSongs() {
         allSongsContainer.innerHTML = "<p>Ошибка загрузки песен</p>";
     }
 }
-
-// ====== Проигрывание ======
-function playSong(url) {
-    if (!url) return;
-    player.src = url;
-    player.play();
-}
-window.playSong = playSong;
 
 // ====== Инициализация ======
 window.addEventListener("DOMContentLoaded", async () => {
